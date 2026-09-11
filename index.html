@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>HOROTecスタンプラリー</title>
+  <!-- LIFF SDK -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 15px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-bottom: 24px;
+    }
+
+    /* スタンプカードグリッド (2x2) */
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stamp-slot {
+      aspect-ratio: 1;
+      border: 3px dashed #cbd5e1;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+    }
+
+    .stamp-slot.active {
+      border: 3px solid var(--primary-color);
+      background: #f0fdf4;
+    }
+
+    .booth-number {
+      font-size: 14px;
+      font-weight: bold;
+      color: #94a3b8;
+    }
+
+    .stamp-slot.active .booth-number {
+      color: var(--primary-color);
+    }
+
+    /* GETスタンプの見た目 */
+    .stamp-badge {
+      display: none;
+      width: 65px;
+      height: 65px;
+      border: 3px solid #e11d48;
+      border-radius: 50%;
+      color: #e11d48;
+      font-weight: 900;
+      font-size: 16px;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-12deg);
+      box-shadow: 0 0 0 2px #ffffff inset;
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .stamp-slot.active .stamp-badge {
+      display: flex;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+      100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+    }
+
+    /* ボタン類 */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+      transition: background-color 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    /* コンプリートバナー */
+    .complete-banner {
+      display: none;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+      padding: 16px;
+      border-radius: 12px;
+      color: #881337;
+      font-weight: bold;
+      margin-bottom: 20px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #64748b;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">読み込み中...</div>
+
+  <div class="container">
+    <h1>HOROTecスタンプラリー</h1>
+    <p class="subtitle">各ブースのQRコードを読み込んでスタンプを集めよう！</p>
+
+    <div id="completeBanner" class="complete-banner">
+      🎉 コンプリート達成！ 🎉<br>景品交換所でこの画面を見せてね！
+    </div>
+
+    <!-- 4つのスタンプ枠 -->
+    <div class="stamp-grid">
+      <div class="stamp-slot" id="slot-1">
+        <span class="booth-number">ブース 1</span>
+        <div class="stamp-badge">GET!</div>
+      </div>
+      <div class="stamp-slot" id="slot-2">
+        <span class="booth-number">ブース 2</span>
+        <div class="stamp-badge">GET!</div>
+      </div>
+      <div class="stamp-slot" id="slot-3">
+        <span class="booth-number">ブース 3</span>
+        <div class="stamp-badge">GET!</div>
+      </div>
+      <div class="stamp-slot" id="slot-4">
+        <span class="booth-number">ブース 4</span>
+        <div class="stamp-badge">GET!</div>
+      </div>
+    </div>
+
+    <button class="btn" id="scanBtn">QRコードを読み取る</button>
+  </div>
+
+  <script>
+    // ★★★ ここをご自身のGAS WebアプリURLに差し替えてください ★★★
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxhUMUv_sSQePaiCcRJxn1LXzHWmENYM2UFsyGOrotDPayYxMyFZKO7xjrL6f10weFlMA/exec';
+    
+    // LIFF ID (Step 3で設定)
+    let myUserId = '';
+
+    window.onload = async function() {
+      // 1. LIFFの初期化 (※テスト用：LIFF未接続でも動くフォールバックあり)
+      try {
+        await liff.init({ liffId: "YOUR_LIFF_ID" }); // Step 3で差し替え
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          myUserId = profile.userId;
+        } else {
+          liff.login();
+        }
+      } catch (err) {
+        console.log("LIFF初期化スキップ（ブラウザ直開きのテスト用）");
+        myUserId = "test_user_999"; // テスト用ダミーID
+      }
+
+      // 2. 現在のスタンプ状況を取得して画面を更新
+      await loadStampStatus();
+      document.getElementById('loading').style.display = 'none';
+
+      // 3. スキャンボタンの設定
+      document.getElementById('scanBtn').addEventListener('click', () => {
+        if (liff.isInClient()) {
+          liff.scanCodeV2().then(result => {
+            handleScanResult(result.value);
+          }).catch(err => {
+            alert("カメラの起動に失敗しました: " + err.message);
+          });
+        } else {
+          // PC・通常ブラウザでのテスト用処理
+          const booth = prompt("【テスト機能】スキャンしたブース番号を入力してください (1〜4):");
+          if (booth) handleScanResult(`STAMP_${booth}`);
+        }
+      });
+    };
+
+    // GASからスタンプ状態を取得
+    async function loadStampStatus() {
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=getStatus&userId=${myUserId}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          updateUI(data.stamps, data.isComplete);
+        }
+      } catch (e) {
+        console.error("データ取得エラー:", e);
+      }
+    }
+
+    // QRコードスキャン後の処理
+    async function handleScanResult(qrValue) {
+      // QRコードからブース番号を判定 (例: STAMP_1, STAMP_2 ...)
+      const match = qrValue.match(/STAMP_([1-4])/);
+      if (!match) {
+        alert("無効なQRコードです。スタンプラリー用のQRコードをスキャンしてください。");
+        return;
+      }
+
+      const boothId = match[1];
+      document.getElementById('loading').style.display = 'flex';
+
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=addStamp&userId=${myUserId}&boothId=${boothId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          updateUI(data.stamps, data.isComplete);
+          alert(`ブース ${boothId} のスタンプを獲得しました！`);
+        } else {
+          alert(data.message || "処理に失敗しました");
+        }
+      } catch (e) {
+        alert("通信エラーが発生しました");
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    // 画面の「GET!」表示を更新する関数
+    function updateUI(stamps, isComplete) {
+      stamps.forEach((hasStamp, index) => {
+        const slot = document.getElementById(`slot-${index + 1}`);
+        if (hasStamp) {
+          slot.classList.add('active');
+        } else {
+          slot.classList.remove('active');
+        }
+      });
+
+      if (isComplete) {
+        document.getElementById('completeBanner').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
