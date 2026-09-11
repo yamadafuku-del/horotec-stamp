@@ -205,7 +205,7 @@
     window.onload = async function() {
       // 1. LIFFの初期化 (※テスト用：LIFF未接続でも動くフォールバックあり)
       try {
-        await liff.init({ liffId: "YOUR_LIFF_ID" }); // Step 3で差し替え
+        await liff.init({ liffId: "2011555599-0FdG2I4g" }); // Step 3で差し替え済み
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
           myUserId = profile.userId;
