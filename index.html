@@ -209,8 +209,12 @@
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
           myUserId = profile.userId;
-        } else {
+         } else if (liff.isInClient()) {
+          // LINEアプリ内の場合はログインを実行
           liff.login();
+        } else {
+          // PC・通常ブラウザでのテスト用フォールバック
+          myUserId = "test_user_999";
         }
       } catch (err) {
         console.log("LIFF初期化スキップ（ブラウザ直開きのテスト用）");
