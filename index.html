@@ -232,7 +232,11 @@
         } else {
           // PC・通常ブラウザでのテスト用処理
           const booth = prompt("【テスト機能】スキャンしたブース番号を入力してください (1〜4):");
-          if (booth) handleScanResult(`STAMP_${booth}`);
+          if (booth) {
+            // 数字だけ入力された場合も "STAMP_1" の形式に補正
+            const formattedValue = booth.startsWith('STAMP_') ? booth : `STAMP_${booth}`;
+            handleScanResult(formattedValue);
+          }
         }
       });
     };
