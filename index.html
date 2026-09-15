@@ -271,6 +271,9 @@
       const boothId = match[1];
       document.getElementById('loading').style.display = 'flex';
 
+      const requestUrl = `${GAS_API_URL}?action=addStamp&userId=${myUserId}&boothId=${boothId}`;
+      console.log("★送信中のURL:", requestUrl);
+      
       try {
         const res = await fetch(`${GAS_API_URL}?action=addStamp&userId=${myUserId}&boothId=${boothId}`);
         const data = await res.json();
